@@ -136,7 +136,8 @@
             {
               "path": "FridgeTheme.swift",
               "target-membership": [
-                "Bingxiang/compile-sources"
+                "Bingxiang/compile-sources",
+                "BingxiangWidget/compile-sources"
               ]
             },
             {
@@ -264,6 +265,12 @@
               "target-membership": [
                 "Bingxiang/compile-sources"
               ]
+            },
+            {
+              "path": "WidgetSnapshotWriter.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
             }
           ]
         },
@@ -296,6 +303,52 @@
               ]
             }
           ]
+        },
+        {
+          "path": "Bingxiang.entitlements"
+        }
+      ]
+    },
+    {
+      "kind": "group",
+      "path": "Shared",
+      "children": [
+        {
+          "path": "WidgetSnapshot.swift",
+          "target-membership": [
+            "Bingxiang/compile-sources",
+            "BingxiangWidget/compile-sources"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "group",
+      "path": "BingxiangWidget",
+      "children": [
+        {
+          "path": "BingxiangWidgetBundle.swift",
+          "target-membership": [
+            "BingxiangWidget/compile-sources"
+          ]
+        },
+        {
+          "path": "FridgeWidget.swift",
+          "target-membership": [
+            "BingxiangWidget/compile-sources"
+          ]
+        },
+        {
+          "path": "Assets.xcassets",
+          "target-membership": [
+            "BingxiangWidget/resources"
+          ]
+        },
+        {
+          "path": "Info.plist"
+        },
+        {
+          "path": "BingxiangWidget.entitlements"
         }
       ]
     },
@@ -308,6 +361,18 @@
           "id": "B1A2C3D4E5F60718293A4B5C",
           "type": "wrapper.application",
           "index": false
+        },
+        {
+          "path": "<PRODUCTS>/BingxiangWidget.appex",
+          "id": "D3C4B5A6F7E80921304C5D6E",
+          "type": "wrapper.app-extension",
+          "index": false,
+          "target-membership": [
+            {
+              "build-phase": "Bingxiang/copy/Embed Foundation Extensions",
+              "code-sign-on-copy": true
+            }
+          ]
         }
       ]
     }
@@ -321,7 +386,12 @@
       "legacy-provisioning-style": "automatic",
       "build-phases": [
         "compile-sources",
-        "resources"
+        "resources",
+        {
+          "kind": "copy",
+          "name": "Embed Foundation Extensions",
+          "bundle-base-path": "plugins-directory"
+        }
       ],
       "build-settings": {
         "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
@@ -340,6 +410,42 @@
         ],
         "PRODUCT_BUNDLE_IDENTIFIER": "dev.bingxiang.app",
         "SDKROOT": "iphoneos",
+        "TARGETED_DEVICE_FAMILY": "1,2",
+        "CODE_SIGN_ENTITLEMENTS": "Bingxiang/Bingxiang.entitlements"
+      },
+      "dependencies": [
+        "BingxiangWidget"
+      ]
+    },
+    {
+      "name": "BingxiangWidget",
+      "id": "E4D5C6B7A8F90A1B2C3D4E5F",
+      "product": "Products/BingxiangWidget.appex",
+      "product-type": "app-extension",
+      "legacy-provisioning-style": "automatic",
+      "build-phases": [
+        "compile-sources",
+        "resources"
+      ],
+      "build-settings": {
+        "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME": "AccentColor",
+        "ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME": "WidgetBackground",
+        "CODE_SIGN_ENTITLEMENTS": "BingxiangWidget/BingxiangWidget.entitlements",
+        "CODE_SIGN_IDENTITY": "iPhone Developer",
+        "CODE_SIGN_STYLE": "Automatic",
+        "GENERATE_INFOPLIST_FILE": "YES",
+        "INFOPLIST_FILE": "BingxiangWidget/Info.plist",
+        "INFOPLIST_KEY_CFBundleDisplayName": "冰箱门",
+        "INFOPLIST_KEY_NSHumanReadableCopyright": "",
+        "LD_RUNPATH_SEARCH_PATHS": [
+          "$(inherited)",
+          "@executable_path/Frameworks",
+          "@executable_path/../../Frameworks"
+        ],
+        "PRODUCT_BUNDLE_IDENTIFIER": "dev.bingxiang.app.widget",
+        "SDKROOT": "iphoneos",
+        "SKIP_INSTALL": "YES",
+        "SWIFT_DEFAULT_ACTOR_ISOLATION": "nonisolated",
         "TARGETED_DEVICE_FAMILY": "1,2"
       }
     }

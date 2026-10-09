@@ -194,6 +194,23 @@ struct FridgeView: View {
         .task(id: door.openedAt) {
             await watchDoorAjar()
         }
+        .onAppear(perform: publishWidgetSnapshot)
+        .onChange(of: items.count) { _, _ in publishWidgetSnapshot() }
+        .onChange(of: shoppingItems.count) { _, _ in publishWidgetSnapshot() }
+        .onChange(of: notes.count) { _, _ in publishWidgetSnapshot() }
+        .onChange(of: themeID) { _, _ in publishWidgetSnapshot() }
+        .onChange(of: door.todayOpenCount) { _, _ in publishWidgetSnapshot() }
+    }
+
+    /// 把门上的内容同步给桌面 / 锁屏小组件。
+    private func publishWidgetSnapshot() {
+        WidgetSnapshotWriter.write(
+            items: items,
+            shoppingItems: shoppingItems,
+            notes: notes,
+            themeID: themeID,
+            openCount: door.todayOpenCount
+        )
     }
 
     // MARK: "…" 菜单

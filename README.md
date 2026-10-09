@@ -41,6 +41,8 @@
 | 字母磁贴 | 「…」→ 字母拼字，最多 8 个字，五颜六色的字母磁贴，可以拖 |
 | 手写便签 | 点门上的马克笔磁贴，用手指或 Apple Pencil 在便签纸上写字画画（PencilKit），贴上去可以拖 |
 | 商品陈列 | 数量多的食材在架子上摆成多份（最多 3 份），带接触阴影；放不下的折成 +N |
+| 食材图 | `Assets.xcassets/Food/food-<id>` 有写实透明 PNG 就用图，没有回退 emoji。素材用 `Tools/FoodArt` 导入：把 AI 生成的图放进 `Tools/FoodArt/incoming/`，`foodart --import` 自动抠图、裁切、写进资源目录（提示词在 `Tools/FoodArt/PROMPTS.md`） |
+| 小组件 | `BingxiangWidget` 扩展：桌面小 / 中 / 大号画一扇贴着「快过期」「要买」便签的冰箱门，锁屏圆形 / 矩形 / 行内显示快过期数量。App 把快照写进 App Group（`group.dev.bingxiang.app`），数据一变就刷新 |
 | 竖直标签栏 | 用系统 `TabView`，展开时标签栏自动跑到侧边；所有工具栏按钮都带标题和图标 |
 
 ## 运行
@@ -81,6 +83,10 @@ xcodebuild -project Bingxiang.xcodeproj -scheme Bingxiang \
   SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) DUO_API_SHIM' build
 ```
 
+## 为什么不能当动态壁纸
+
+iOS 不允许第三方 app 替换锁屏或桌面壁纸，合上的 Duo 外屏显示的是系统锁屏。最接近的两种做法：桌面 / 锁屏小组件（本仓库已做），或者用「引导式访问」把手机锁定在这个 app 里（设置 → 辅助功能 → 引导式访问，打开 app 后连按三下侧边按钮）。
+
 ## 工程结构
 
 工程用的是 Xcode 27.1 的 JSON 工程格式（`Bingxiang.xcodeproj/project.xcproj`），每个源文件都在里面显式列出。新增文件时加一行：
@@ -102,7 +108,10 @@ Bingxiang
 ├── Settings     # 设置与 AppStorage 键
 ├── Services     # 本地通知、音效
 ├── Components   # 共用的行、徽标、滑动操作
-└── Resources    # 资源目录
+└── Resources    # 资源目录（Food/ 里是食材图）
+BingxiangWidget  # 桌面 / 锁屏小组件
+Shared           # App 和小组件共用的快照结构
+Tools/FoodArt    # 食材图生成 / 导入工具
 ```
 
 构建设置：Swift 6，`SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor`。自定义 `Layout` / `Shape` 要声明成 `nonisolated struct`。

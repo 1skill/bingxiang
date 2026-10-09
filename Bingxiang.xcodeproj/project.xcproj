@@ -1,0 +1,525 @@
+{
+  "default-configuration": "Debug",
+  "configurations": [
+    "Debug",
+    "Release"
+  ],
+  "localizations": {
+    "development": "zh-Hans",
+    "supported": [
+      "Base"
+    ]
+  },
+  "files": [
+    {
+      "kind": "group",
+      "path": "Bingxiang",
+      "children": [
+        {
+          "kind": "group",
+          "path": "App",
+          "children": [
+            {
+              "path": "BingxiangApp.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "RootView.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "group",
+          "path": "Models",
+          "children": [
+            {
+              "path": "DoorNote.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "DoorPhoto.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "FoodItem.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "ShoppingItem.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "group",
+          "path": "Data",
+          "children": [
+            {
+              "path": "FoodCatalog.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "RecipeCatalog.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "SampleData.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "group",
+          "path": "Fridge",
+          "children": [
+            {
+              "path": "ColourPickerView.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "DoorController.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "DoorMagnets.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "DoorNoteEditor.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "DoorView.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "DrawingNoteSheet.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "FridgeMetrics.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "FridgeTheme.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources",
+                "BingxiangWidget/compile-sources"
+              ]
+            },
+            {
+              "path": "FridgeView.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "InteriorView.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "ShelfPanel.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "group",
+          "path": "Inventory",
+          "children": [
+            {
+              "path": "InventoryListView.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "ItemFormView.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "QuickAddView.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "group",
+          "path": "Shopping",
+          "children": [
+            {
+              "path": "ShoppingListView.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "group",
+          "path": "Recipes",
+          "children": [
+            {
+              "path": "RecipeDetailView.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "RecipesView.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "group",
+          "path": "Stats",
+          "children": [
+            {
+              "path": "StatsView.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "group",
+          "path": "Settings",
+          "children": [
+            {
+              "path": "SettingsKeys.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "SettingsView.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "group",
+          "path": "Services",
+          "children": [
+            {
+              "path": "DuoAPIShim.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "NotificationService.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "SoundPlayer.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "WidgetSnapshotWriter.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "group",
+          "path": "Components",
+          "children": [
+            {
+              "path": "ItemActions.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
+              "path": "ItemRow.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            }
+          ]
+        },
+        {
+          "kind": "group",
+          "path": "Resources",
+          "children": [
+            {
+              "path": "Assets.xcassets",
+              "target-membership": [
+                "Bingxiang/resources"
+              ]
+            }
+          ]
+        },
+        {
+          "path": "Bingxiang.entitlements"
+        }
+      ]
+    },
+    {
+      "kind": "group",
+      "path": "Shared",
+      "children": [
+        {
+          "path": "WidgetSnapshot.swift",
+          "target-membership": [
+            "Bingxiang/compile-sources",
+            "BingxiangWidget/compile-sources"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "group",
+      "path": "BingxiangWidget",
+      "children": [
+        {
+          "path": "BingxiangWidgetBundle.swift",
+          "target-membership": [
+            "BingxiangWidget/compile-sources"
+          ]
+        },
+        {
+          "path": "FridgeWidget.swift",
+          "target-membership": [
+            "BingxiangWidget/compile-sources"
+          ]
+        },
+        {
+          "path": "Assets.xcassets",
+          "target-membership": [
+            "BingxiangWidget/resources"
+          ]
+        },
+        {
+          "path": "Info.plist"
+        },
+        {
+          "path": "BingxiangWidget.entitlements"
+        }
+      ]
+    },
+    {
+      "kind": "group",
+      "name": "Products",
+      "children": [
+        {
+          "path": "<PRODUCTS>/Bingxiang.app",
+          "id": "B1A2C3D4E5F60718293A4B5C",
+          "type": "wrapper.application",
+          "index": false
+        },
+        {
+          "path": "<PRODUCTS>/BingxiangWidget.appex",
+          "id": "D3C4B5A6F7E80921304C5D6E",
+          "type": "wrapper.app-extension",
+          "index": false,
+          "target-membership": [
+            {
+              "build-phase": "Bingxiang/copy/Embed Foundation Extensions",
+              "code-sign-on-copy": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "targets": [
+    {
+      "name": "Bingxiang",
+      "id": "C2B3A4D5E6F70819203B4C5D",
+      "product": "Products/Bingxiang.app",
+      "product-type": "application",
+      "legacy-provisioning-style": "automatic",
+      "build-phases": [
+        "compile-sources",
+        "resources",
+        {
+          "kind": "copy",
+          "name": "Embed Foundation Extensions",
+          "bundle-base-path": "plugins-directory"
+        }
+      ],
+      "build-settings": {
+        "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
+        "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME": "AccentColor",
+        "CODE_SIGN_IDENTITY": "iPhone Developer",
+        "CODE_SIGN_STYLE": "Automatic",
+        "ENABLE_PREVIEWS": "YES",
+        "GENERATE_INFOPLIST_FILE": "YES",
+        "INFOPLIST_KEY_CFBundleDisplayName": "冰箱",
+        "INFOPLIST_KEY_UIApplicationSceneManifest_Generation": "YES",
+        "INFOPLIST_KEY_UILaunchScreen_Generation": "YES",
+        "INFOPLIST_KEY_UISupportedInterfaceOrientations": "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortraitUpsideDown",
+        "LD_RUNPATH_SEARCH_PATHS": [
+          "$(inherited)",
+          "@executable_path/Frameworks"
+        ],
+        "PRODUCT_BUNDLE_IDENTIFIER": "dev.bingxiang.app",
+        "SDKROOT": "iphoneos",
+        "TARGETED_DEVICE_FAMILY": "1,2",
+        "CODE_SIGN_ENTITLEMENTS": "Bingxiang/Bingxiang.entitlements"
+      },
+      "dependencies": [
+        "BingxiangWidget"
+      ]
+    },
+    {
+      "name": "BingxiangWidget",
+      "id": "E4D5C6B7A8F90A1B2C3D4E5F",
+      "product": "Products/BingxiangWidget.appex",
+      "product-type": "app-extension",
+      "legacy-provisioning-style": "automatic",
+      "build-phases": [
+        "compile-sources",
+        "resources"
+      ],
+      "build-settings": {
+        "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME": "AccentColor",
+        "ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME": "WidgetBackground",
+        "CODE_SIGN_ENTITLEMENTS": "BingxiangWidget/BingxiangWidget.entitlements",
+        "CODE_SIGN_IDENTITY": "iPhone Developer",
+        "CODE_SIGN_STYLE": "Automatic",
+        "GENERATE_INFOPLIST_FILE": "YES",
+        "INFOPLIST_FILE": "BingxiangWidget/Info.plist",
+        "INFOPLIST_KEY_CFBundleDisplayName": "冰箱门",
+        "INFOPLIST_KEY_NSHumanReadableCopyright": "",
+        "LD_RUNPATH_SEARCH_PATHS": [
+          "$(inherited)",
+          "@executable_path/Frameworks",
+          "@executable_path/../../Frameworks"
+        ],
+        "PRODUCT_BUNDLE_IDENTIFIER": "dev.bingxiang.app.widget",
+        "SDKROOT": "iphoneos",
+        "SKIP_INSTALL": "YES",
+        "SWIFT_DEFAULT_ACTOR_ISOLATION": "nonisolated",
+        "TARGETED_DEVICE_FAMILY": "1,2"
+      }
+    }
+  ],
+  "build-settings": {
+    "ALWAYS_SEARCH_USER_PATHS": "NO",
+    "CLANG_ANALYZER_NONNULL": "YES",
+    "CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION": "YES_AGGRESSIVE",
+    "CLANG_CXX_LANGUAGE_STANDARD": "gnu++14",
+    "CLANG_CXX_LIBRARY": "libc++",
+    "CLANG_ENABLE_MODULES": "YES",
+    "CLANG_ENABLE_OBJC_ARC": "YES",
+    "CLANG_ENABLE_OBJC_WEAK": "YES",
+    "CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING": "YES",
+    "CLANG_WARN_BOOL_CONVERSION": "YES",
+    "CLANG_WARN_COMMA": "YES",
+    "CLANG_WARN_CONSTANT_CONVERSION": "YES",
+    "CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS": "YES",
+    "CLANG_WARN_DIRECT_OBJC_ISA_USAGE": "YES_ERROR",
+    "CLANG_WARN_DOCUMENTATION_COMMENTS": "YES",
+    "CLANG_WARN_EMPTY_BODY": "YES",
+    "CLANG_WARN_ENUM_CONVERSION": "YES",
+    "CLANG_WARN_INFINITE_RECURSION": "YES",
+    "CLANG_WARN_INT_CONVERSION": "YES",
+    "CLANG_WARN_NON_LITERAL_NULL_CONVERSION": "YES",
+    "CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF": "YES",
+    "CLANG_WARN_OBJC_LITERAL_CONVERSION": "YES",
+    "CLANG_WARN_OBJC_ROOT_CLASS": "YES_ERROR",
+    "CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER": "YES",
+    "CLANG_WARN_RANGE_LOOP_ANALYSIS": "YES",
+    "CLANG_WARN_STRICT_PROTOTYPES": "YES",
+    "CLANG_WARN_SUSPICIOUS_MOVE": "YES",
+    "CLANG_WARN_UNGUARDED_AVAILABILITY": "YES_AGGRESSIVE",
+    "CLANG_WARN_UNREACHABLE_CODE": "YES",
+    "CLANG_WARN__DUPLICATE_METHOD_MATCH": "YES",
+    "COPY_PHASE_STRIP": "NO",
+    "CURRENT_PROJECT_VERSION": "1",
+    "DEBUG_INFORMATION_FORMAT[config=Debug]": "dwarf",
+    "DEBUG_INFORMATION_FORMAT[config=Release]": "dwarf-with-dsym",
+    "ENABLE_NS_ASSERTIONS[config=Release]": "NO",
+    "ENABLE_STRICT_OBJC_MSGSEND": "YES",
+    "ENABLE_TESTABILITY[config=Debug]": "YES",
+    "ENABLE_USER_SCRIPT_SANDBOXING": "YES",
+    "GCC_C_LANGUAGE_STANDARD": "gnu11",
+    "GCC_DYNAMIC_NO_PIC[config=Debug]": "NO",
+    "GCC_NO_COMMON_BLOCKS": "YES",
+    "GCC_OPTIMIZATION_LEVEL[config=Debug]": "0",
+    "GCC_PREPROCESSOR_DEFINITIONS[config=Debug]": [
+      "$(inherited)",
+      "DEBUG=1"
+    ],
+    "GCC_WARN_64_TO_32_BIT_CONVERSION": "YES",
+    "GCC_WARN_ABOUT_RETURN_TYPE": "YES_ERROR",
+    "GCC_WARN_UNDECLARED_SELECTOR": "YES",
+    "GCC_WARN_UNINITIALIZED_AUTOS": "YES_AGGRESSIVE",
+    "GCC_WARN_UNUSED_FUNCTION": "YES",
+    "GCC_WARN_UNUSED_VARIABLE": "YES",
+    "IPHONEOS_DEPLOYMENT_TARGET": "27.1",
+    "MARKETING_VERSION": "1.0",
+    "MTL_ENABLE_DEBUG_INFO[config=Debug]": "INCLUDE_SOURCE",
+    "MTL_ENABLE_DEBUG_INFO[config=Release]": "NO",
+    "MTL_FAST_MATH": "YES",
+    "ONLY_ACTIVE_ARCH[config=Debug]": "YES",
+    "PRODUCT_NAME": "$(TARGET_NAME)",
+    "SDKROOT": "iphoneos",
+    "STRING_CATALOG_GENERATE_SYMBOLS": "YES",
+    "SWIFT_ACTIVE_COMPILATION_CONDITIONS[config=Debug]": "DEBUG",
+    "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
+    "SWIFT_COMPILATION_MODE[config=Release]": "wholemodule",
+    "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor",
+    "SWIFT_OPTIMIZATION_LEVEL[config=Debug]": "-Onone",
+    "SWIFT_OPTIMIZATION_LEVEL[config=Release]": "-O",
+    "SWIFT_VERSION": "6.0"
+  },
+  "products-group": null,
+  "last-upgrade": "27.1"
+}

@@ -9,6 +9,9 @@ final class DoorNote {
     var colorName: String
     var rotation: Double
     var createdDate: Date
+    /// 在冷藏门上的位置，0...1 的比例，可以拖着挪。
+    var posX: Double = 0.4
+    var posY: Double = 0.55
 
     static let colorNames = ["yellow", "pink", "mint", "sky", "lilac"]
 
@@ -17,6 +20,8 @@ final class DoorNote {
         self.colorName = colorName ?? Self.colorNames.randomElement() ?? "yellow"
         self.rotation = rotation ?? Double.random(in: -6...6)
         self.createdDate = .now
+        self.posX = Double.random(in: 0.25...0.65)
+        self.posY = Double.random(in: 0.66...0.84)
     }
 
     var color: Color {

@@ -86,6 +86,12 @@
           "path": "Fridge",
           "children": [
             {
+              "path": "ColourPickerView.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
               "path": "DoorController.swift",
               "target-membership": [
                 "Bingxiang/compile-sources"
@@ -110,7 +116,7 @@
               ]
             },
             {
-              "path": "FridgeStage.swift",
+              "path": "FridgeTheme.swift",
               "target-membership": [
                 "Bingxiang/compile-sources"
               ]

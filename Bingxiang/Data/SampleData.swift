@@ -72,8 +72,14 @@ enum SampleData {
 
         context.insert(ShoppingItem(name: "鸡蛋", emoji: "🥚", quantity: 10, unit: "个"))
         context.insert(ShoppingItem(name: "西兰花", emoji: "🥦", quantity: 1, unit: "颗"))
-        context.insert(DoorNote(text: "周末火锅 🍲", colorName: "yellow", rotation: -4))
-        context.insert(DoorNote(text: "记得买酱油", colorName: "pink", rotation: 3))
+        let hotpot = DoorNote(text: "周末火锅 🍲", colorName: "mint", rotation: -4)
+        hotpot.posX = 0.30
+        hotpot.posY = 0.76
+        context.insert(hotpot)
+        let soy = DoorNote(text: "记得买酱油", colorName: "pink", rotation: 3)
+        soy.posX = 0.64
+        soy.posY = 0.80
+        context.insert(soy)
 
         try? context.save()
     }

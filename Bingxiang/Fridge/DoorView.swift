@@ -29,9 +29,9 @@ struct DoorView: View {
             let freezerDoor = CGRect(x: 0, y: seamY + 5, width: width, height: height - seamY - 5)
 
             ZStack(alignment: .topLeading) {
-                DoorPanel(theme: theme)
+                DoorPanel(theme: theme, roundedTop: false)
                     .frame(width: fridgeDoor.width, height: fridgeDoor.height)
-                DoorPanel(theme: theme)
+                DoorPanel(theme: theme, roundedTop: true)
                     .frame(width: freezerDoor.width, height: freezerDoor.height)
                     .offset(y: freezerDoor.minY)
 
@@ -134,12 +134,23 @@ struct DoorView: View {
 
 // MARK: - 零件
 
-/// 一扇有光泽的门板。
+/// 一扇有光泽的门板。上门板只圆下面两个角、下门板只圆上面两个角，贴着屏幕边缘，不露缝。
 private struct DoorPanel: View {
     let theme: FridgeTheme
+    let roundedTop: Bool
+
+    private var shape: UnevenRoundedRectangle {
+        UnevenRoundedRectangle(
+            topLeadingRadius: roundedTop ? 30 : 0,
+            bottomLeadingRadius: roundedTop ? 0 : 30,
+            bottomTrailingRadius: roundedTop ? 0 : 30,
+            topTrailingRadius: roundedTop ? 30 : 0,
+            style: .continuous
+        )
+    }
 
     var body: some View {
-        RoundedRectangle(cornerRadius: 34, style: .continuous)
+        shape
             .fill(
                 LinearGradient(
                     colors: [theme.exteriorHighlight, theme.exterior, theme.exterior.opacity(0.92)],
@@ -149,7 +160,7 @@ private struct DoorPanel: View {
             )
             .overlay {
                 // 左上角一团柔光，像灯打在烤漆上。
-                RoundedRectangle(cornerRadius: 34, style: .continuous)
+                shape
                     .fill(
                         RadialGradient(
                             colors: [.white.opacity(theme.isDark ? 0.22 : 0.5), .clear],
@@ -160,7 +171,7 @@ private struct DoorPanel: View {
                     )
             }
             .overlay {
-                RoundedRectangle(cornerRadius: 34, style: .continuous)
+                shape
                     .strokeBorder(
                         LinearGradient(colors: [.white.opacity(0.45), .clear, .black.opacity(0.25)], startPoint: .top, endPoint: .bottom),
                         lineWidth: 1.5

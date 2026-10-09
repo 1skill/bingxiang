@@ -147,6 +147,12 @@
               ]
             },
             {
+              "path": "FrostOverlay.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
               "path": "InteriorView.swift",
               "target-membership": [
                 "Bingxiang/compile-sources"

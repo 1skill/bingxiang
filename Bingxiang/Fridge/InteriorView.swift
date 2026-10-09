@@ -17,40 +17,33 @@ struct InteriorView: View {
             let size = proxy.size
 
             Group {
+                // 底图是装饰，不是可点的控件，所以直接画过折痕：两半在折痕中线上贴在一起。
                 if let fold, fold.height >= fold.width {
                     HStack(spacing: 0) {
                         doorInside
-                            .frame(width: max(fold.minX, 0))
+                            .frame(width: max(fold.midX, 0))
                             .blur(radius: doorBlur)
-                        FoldGap(isVertical: true)
-                            .frame(width: fold.width)
                         cabinet
-                            .frame(width: max(size.width - fold.maxX, 0))
+                            .frame(width: max(size.width - fold.midX, 0))
                     }
                 } else if let fold {
                     VStack(spacing: 0) {
                         cabinet
-                            .frame(height: max(fold.minY, 0))
-                        FoldGap(isVertical: false)
-                            .frame(height: fold.height)
+                            .frame(height: max(fold.midY, 0))
                         doorInside
-                            .frame(height: max(size.height - fold.maxY, 0))
+                            .frame(height: max(size.height - fold.midY, 0))
                             .blur(radius: doorBlur)
                     }
                 } else if size.width > size.height {
                     HStack(spacing: 0) {
                         doorInside
-                            .frame(width: size.width * 0.46)
-                        FoldGap(isVertical: true)
-                            .frame(width: 8)
+                            .frame(width: size.width * 0.5)
                         cabinet
                     }
                 } else {
                     VStack(spacing: 0) {
                         cabinet
                             .frame(height: size.height * 0.62)
-                        FoldGap(isVertical: false)
-                            .frame(height: 8)
                         doorInside
                     }
                 }
@@ -68,11 +61,11 @@ struct InteriorView: View {
     // MARK: 两半
 
     private var cabinet: some View {
-        RenderedHalf(theme: theme, imageName: "interior-cabinet", slots: InteriorLayout.cabinet, items: cabinetItems, onSelect: onSelect)
+        RenderedHalf(theme: theme, imageName: "interior-cabinet", slots: InteriorLayout.cabinet, items: cabinetItems, anchorsLeading: true, onSelect: onSelect)
     }
 
     private var doorInside: some View {
-        RenderedHalf(theme: theme, imageName: "interior-door", slots: InteriorLayout.door, items: doorItems, onSelect: onSelect)
+        RenderedHalf(theme: theme, imageName: "interior-door", slots: InteriorLayout.door, items: doorItems, anchorsLeading: false, onSelect: onSelect)
     }
 
     /// 柜体每一层放什么：上中下层、保鲜抽屉，冷冻的一半。
@@ -125,6 +118,8 @@ struct ShelfSlot {
 
 enum InteriorLayout {
     static let imageSize = CGSize(width: 1024, height: 1536)
+    /// 冷冻区在底图里的纵向范围，用来铺霜。
+    static let freezerZone: ClosedRange<CGFloat> = 0.655...1.0
 
     static let cabinet: [ShelfSlot] = [
         ShelfSlot(location: .upperShelf, baseline: 0.142, top: 0.015, left: 0.09, right: 0.91),
@@ -150,17 +145,25 @@ private struct RenderedHalf: View {
     let imageName: String
     let slots: [ShelfSlot]
     let items: [[FoodItem]]
+    /// 柜体靠左边（折痕）对齐，门靠右边（折痕）对齐，多出来的那一点宽度留给外侧的箱体。
+    let anchorsLeading: Bool
     let onSelect: (StorageLocation) -> Void
 
     var body: some View {
         GeometryReader { proxy in
             let size = proxy.size
             let image = InteriorLayout.imageSize
-            let scale = max(size.width / image.width, size.height / image.height)
+            // 整张底图完整显示，不裁上下。
+            let scale = min(size.width / image.width, size.height / image.height)
             let drawn = CGSize(width: image.width * scale, height: image.height * scale)
-            let origin = CGPoint(x: (size.width - drawn.width) / 2, y: (size.height - drawn.height) / 2)
+            let origin = CGPoint(x: anchorsLeading ? 0 : size.width - drawn.width, y: (size.height - drawn.height) / 2)
 
             ZStack(alignment: .topLeading) {
+                // 箱体：底图没盖到的地方。
+                LinearGradient(colors: [theme.exterior, theme.exterior.opacity(0.8)], startPoint: .top, endPoint: .bottom)
+                    .overlay(.black.opacity(0.3))
+                    .frame(width: size.width, height: size.height)
+
                 // 和食材图走同一条路：UIImage 再包成 Image，方便以后换成从文件加载。
                 Image(uiImage: UIImage(named: imageName) ?? UIImage())
                     .resizable()
@@ -168,6 +171,11 @@ private struct RenderedHalf: View {
                     .frame(width: drawn.width, height: drawn.height)
                     .modifier(ThemeRecolor(theme: theme))
                     .offset(x: origin.x, y: origin.y)
+
+                // 冷冻区的霜，铺在底图上、食材下。
+                FrostOverlay()
+                    .frame(width: drawn.width, height: (InteriorLayout.freezerZone.upperBound - InteriorLayout.freezerZone.lowerBound) * drawn.height)
+                    .offset(x: origin.x, y: origin.y + InteriorLayout.freezerZone.lowerBound * drawn.height)
 
                 ForEach(Array(slots.enumerated()), id: \.offset) { index, slot in
                     let x0 = origin.x + slot.left * drawn.width
@@ -205,11 +213,12 @@ private struct ThemeRecolor: ViewModifier {
     let theme: FridgeTheme
 
     func body(content: Content) -> some View {
-        if theme.renderHue == .zero && theme.renderSaturation == 1 && theme.renderBrightness == 0 {
+        if theme.renderHue == .zero && theme.renderSaturation == 1 && theme.renderBrightness == 0 && theme.renderContrast == 1 {
             content
         } else {
             content
                 .hueRotation(theme.renderHue)
+                .contrast(theme.renderContrast)
                 .saturation(theme.renderSaturation)
                 .brightness(theme.renderBrightness)
         }
@@ -223,10 +232,10 @@ private struct ShelfRow: View {
     let height: CGFloat
 
     var body: some View {
-        let layout = ShelfLayout(items: items, tile: height * 0.96, available: width - 8)
-        HStack(alignment: .bottom, spacing: -2) {
+        let layout = ShelfLayout(items: items, cellHeight: height * 0.96, available: width - 8)
+        HStack(alignment: .bottom, spacing: 2) {
             ForEach(layout.visible) { item in
-                ProductView(item: item, size: layout.tile * Self.scale(for: item))
+                ProductView(item: item, size: ShelfLayout.size(of: item, cellHeight: height * 0.96, factor: layout.factor) * Self.scale(for: item))
             }
             if layout.overflow > 0 {
                 Text("+\(layout.overflow)")
@@ -245,40 +254,44 @@ private struct ShelfRow: View {
     /// 让每样东西大小略有差别，看起来不那么像一排图标。
     private static func scale(for item: FoodItem) -> CGFloat {
         let hash = item.name.unicodeScalars.reduce(0) { ($0 &* 31 &+ Int($1.value)) & 0xFFFF }
-        return 0.86 + CGFloat(hash % 15) / 100
+        return 0.92 + CGFloat(hash % 9) / 100
     }
 }
 
-/// 架子上放得下几样：放不下就先把东西整体缩小一点（最多缩到 58%），还放不下才折成 "+N"。
+/// 架子上放得下几样：每样按自己的相对大小占位，放不下就整体缩小（最多缩到 58%），还放不下才折成 "+N"。
 private struct ShelfLayout {
     let visible: [FoodItem]
     let overflow: Int
-    /// 实际使用的尺寸，可能比传进来的小。
-    let tile: CGFloat
+    /// 整体缩放系数。
+    let factor: CGFloat
 
-    init(items: [FoodItem], tile: CGFloat, available: CGFloat) {
-        for factor in [1.0, 0.92, 0.84, 0.76, 0.7, 0.64, 0.58] {
-            let scaled = tile * factor
-            let total = items.reduce(CGFloat(0)) { $0 + ProductView.width(for: $1, size: scaled * 0.93) - 2 }
+    static func size(of item: FoodItem, cellHeight: CGFloat, factor: CGFloat) -> CGFloat {
+        // 真实比例再放大一点，不然小东西在架子上看不清。
+        cellHeight * min(CGFloat(FoodCatalog.relativeSize(for: item.name)) * 1.5, 1.0) * factor
+    }
+
+    init(items: [FoodItem], cellHeight: CGFloat, available: CGFloat) {
+        for factor in [1.0, 0.92, 0.84, 0.76, 0.7, 0.64, 0.58] as [CGFloat] {
+            let total = items.reduce(CGFloat(0)) { $0 + ProductView.width(for: $1, size: Self.size(of: $1, cellHeight: cellHeight, factor: factor)) + 2 }
             if total <= available {
                 self.visible = items
                 self.overflow = 0
-                self.tile = scaled
+                self.factor = factor
                 return
             }
         }
-        let scaled = tile * 0.58
+        let factor: CGFloat = 0.58
         var used: CGFloat = 0
         var visible: [FoodItem] = []
         for item in items {
-            let width = ProductView.width(for: item, size: scaled * 0.93) - 2
+            let width = ProductView.width(for: item, size: Self.size(of: item, cellHeight: cellHeight, factor: factor)) + 2
             if used + width > available - 36 && !visible.isEmpty { break }
             used += width
             visible.append(item)
         }
         self.visible = visible
         self.overflow = items.count - visible.count
-        self.tile = scaled
+        self.factor = factor
     }
 }
 

@@ -24,6 +24,7 @@ struct FridgeTheme: Identifiable, Hashable {
     var renderHue: Angle = .zero
     var renderSaturation: Double = 1
     var renderBrightness: Double = 0
+    var renderContrast: Double = 1
 
     var doorText: Color { isDark ? .white.opacity(0.85) : .black.opacity(0.7) }
 
@@ -37,6 +38,23 @@ struct FridgeTheme: Identifiable, Hashable {
         shelfEdge: Color(red: 1.0, green: 0.82, blue: 0.85),
         menuTint: Color(red: 1.0, green: 0.56, blue: 0.64),
         isDark: true
+    )
+
+    /// 同一台樱花红，调子更浓：对比和饱和度更高，像在暖光下拍的照片。
+    static let cherryDeep = FridgeTheme(
+        id: "cherryDeep", name: "樱花红 · 浓",
+        exterior: Color(red: 0.80, green: 0.05, blue: 0.10),
+        exteriorHighlight: Color(red: 0.98, green: 0.26, blue: 0.28),
+        interior: Color(red: 0.90, green: 0.55, blue: 0.62),
+        freezerInterior: Color(red: 0.86, green: 0.78, blue: 0.88),
+        shelf: Color(red: 0.85, green: 0.40, blue: 0.48),
+        shelfEdge: Color(red: 1.0, green: 0.75, blue: 0.80),
+        menuTint: Color(red: 0.95, green: 0.45, blue: 0.55),
+        isDark: true,
+        renderHue: .degrees(-3),
+        renderSaturation: 1.5,
+        renderBrightness: -0.12,
+        renderContrast: 1.25
     )
 
     static let nightSky = FridgeTheme(
@@ -98,7 +116,7 @@ struct FridgeTheme: Identifiable, Hashable {
         renderBrightness: 0.06
     )
 
-    static let all: [FridgeTheme] = [.cherryBlossom, .nightSky, .starWhite, .burgundy, .glacier]
+    static let all: [FridgeTheme] = [.cherryBlossom, .cherryDeep, .nightSky, .starWhite, .burgundy, .glacier]
 
     static func named(_ id: String) -> FridgeTheme {
         all.first { $0.id == id } ?? .cherryBlossom

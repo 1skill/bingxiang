@@ -125,7 +125,7 @@ struct ShelfSpec: Identifiable {
     var isDrawer = false
 }
 
-/// 一半冰箱：上面冷藏，下面冷冻，外面一圈红色箱体。
+/// 一半冰箱：一整个柜体，上面冷藏，下面冷冻，中间一块隔板，外面薄薄一圈红色箱体。
 private struct CompartmentColumn: View {
     let theme: FridgeTheme
     let fridgeShelves: [ShelfSpec]
@@ -134,86 +134,105 @@ private struct CompartmentColumn: View {
     let onSelect: (StorageLocation) -> Void
 
     var body: some View {
-        GeometryReader { proxy in
-            let fridgeHeight = proxy.size.height * FridgeMetrics.fridgeFraction
-            VStack(spacing: 6) {
-                CompartmentBox(theme: theme, shelves: fridgeShelves, wall: theme.interior, isDoor: isDoor, isFreezer: false, onSelect: onSelect)
-                    .frame(height: fridgeHeight - 6)
-                CompartmentBox(theme: theme, shelves: freezerShelves, wall: theme.freezerInterior, isDoor: isDoor, isFreezer: true, onSelect: onSelect)
-            }
-        }
-        .padding(EdgeInsets(top: 10, leading: isDoor ? 10 : 6, bottom: 10, trailing: isDoor ? 6 : 10))
-        .background(liner)
-    }
-
-    /// 箱体：比门板深一点的红。
-    private var liner: some View {
-        LinearGradient(
-            colors: [theme.exterior.opacity(0.95), theme.exterior.opacity(0.75)],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        .overlay(.black.opacity(0.35))
+        CompartmentBox(theme: theme, fridgeShelves: fridgeShelves, freezerShelves: freezerShelves, isDoor: isDoor, onSelect: onSelect)
+            .padding(EdgeInsets(top: 5, leading: isDoor ? 5 : 2, bottom: 5, trailing: isDoor ? 2 : 5))
+            .background(
+                LinearGradient(colors: [theme.exterior, theme.exterior.opacity(0.8)], startPoint: .top, endPoint: .bottom)
+                    .overlay(.black.opacity(0.3))
+            )
     }
 }
 
-/// 一个有深度的格子：开口有一圈内框，看得见侧壁和地板，玻璃层板带透视，每层顶上有灯打下来。
+/// 一个有深度的柜体：从略高处往里看，看得见顶壁、侧壁和地板；玻璃层板带透视；每层顶上有灯打下来。
 private struct CompartmentBox: View {
     let theme: FridgeTheme
-    let shelves: [ShelfSpec]
-    let wall: Color
+    let fridgeShelves: [ShelfSpec]
+    let freezerShelves: [ShelfSpec]
     let isDoor: Bool
-    let isFreezer: Bool
     let onSelect: (StorageLocation) -> Void
 
     var body: some View {
         GeometryReader { proxy in
             let size = proxy.size
-            // 透视：侧壁往里收这么多，像从正前方略高一点往里看。
-            let inset = min(size.width * 0.09, 44)
-            let topInset = min(size.height * 0.05, 22)
+            // 透视：侧壁往里收这么多。
+            let inset = min(size.width * 0.12, 64)
+            let topInset = min(size.height * 0.07, 40)
+            let dividerHeight: CGFloat = 16
+            let fridgeHeight = size.height * FridgeMetrics.fridgeFraction
+
             ZStack {
-                // 后壁：上亮下暗，像被顶灯照着的烤漆。
-                Rectangle()
-                    .fill(
-                        LinearGradient(
-                            stops: [
-                                .init(color: wall.opacity(0.98), location: 0),
-                                .init(color: wall, location: 0.35),
-                                .init(color: wall.opacity(0.88), location: 1),
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .overlay {
-                        // 一道竖向的柔光
-                        LinearGradient(colors: [.clear, .white.opacity(0.10), .clear], startPoint: .leading, endPoint: .trailing)
-                    }
-                PerspectiveWalls(inset: inset, topInset: topInset, wall: wall)
+                // 后壁：冷藏区粉，冷冻区偏白，都是上亮下暗。
+                VStack(spacing: 0) {
+                    wall(theme.interior)
+                        .frame(height: fridgeHeight)
+                    wall(theme.freezerInterior)
+                }
+                PerspectiveWalls(inset: inset, topInset: topInset, wall: theme.interior)
+
+                // 冷藏和冷冻之间的隔板
+                VStack(spacing: 0) {
+                    Rectangle().fill(theme.shelfEdge).frame(height: dividerHeight * 0.45)
+                    Rectangle().fill(theme.shelf).frame(height: dividerHeight * 0.55)
+                        .overlay(alignment: .bottom) {
+                            Rectangle().fill(.white.opacity(0.9)).frame(height: 2)
+                                .shadow(color: .white, radius: 6, y: 4)
+                                .shadow(color: .white.opacity(0.7), radius: 16, y: 10)
+                        }
+                }
+                .frame(height: dividerHeight)
+                .position(x: size.width / 2, y: fridgeHeight)
 
                 // 层架
                 VStack(spacing: 0) {
-                    ForEach(shelves) { spec in
-                        ShelfView(theme: theme, spec: spec, isRack: isDoor, isFreezer: isFreezer, inset: inset)
-                            .onTapGesture { onSelect(spec.location) }
+                    VStack(spacing: 0) {
+                        ForEach(fridgeShelves) { spec in
+                            ShelfView(theme: theme, spec: spec, isRack: isDoor, inset: inset)
+                                .onTapGesture { onSelect(spec.location) }
+                        }
+                    }
+                    .frame(height: max(fridgeHeight - topInset - dividerHeight / 2, 0))
+                    Color.clear
+                        .frame(height: dividerHeight)
+                    VStack(spacing: 0) {
+                        ForEach(freezerShelves) { spec in
+                            ShelfView(theme: theme, spec: spec, isRack: isDoor, inset: inset)
+                                .onTapGesture { onSelect(spec.location) }
+                        }
                     }
                 }
                 .padding(.top, topInset)
                 .padding(.bottom, 4)
             }
-            .clipShape(.rect(cornerRadius: 20))
+            .clipShape(.rect(cornerRadius: 16))
             .overlay {
-                // 开口的内框：一圈深色的门封边，带内阴影。
-                RoundedRectangle(cornerRadius: 20)
-                    .strokeBorder(theme.exterior.opacity(0.9), lineWidth: 7)
-                RoundedRectangle(cornerRadius: 20)
-                    .inset(by: 7)
-                    .stroke(.black.opacity(0.35), lineWidth: 6)
-                    .blur(radius: 5)
-                    .clipShape(RoundedRectangle(cornerRadius: 20).inset(by: 7))
+                // 开口的门封边：薄薄一圈，带内阴影。
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(theme.exterior.opacity(0.85), lineWidth: 4)
+                RoundedRectangle(cornerRadius: 16)
+                    .inset(by: 4)
+                    .stroke(.black.opacity(0.4), lineWidth: 8)
+                    .blur(radius: 6)
+                    .clipShape(RoundedRectangle(cornerRadius: 16).inset(by: 4))
             }
         }
+    }
+
+    private func wall(_ color: Color) -> some View {
+        Rectangle()
+            .fill(
+                LinearGradient(
+                    stops: [
+                        .init(color: color.opacity(0.98), location: 0),
+                        .init(color: color, location: 0.4),
+                        .init(color: color.opacity(0.86), location: 1),
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .overlay {
+                LinearGradient(colors: [.clear, .white.opacity(0.12), .clear], startPoint: .leading, endPoint: .trailing)
+            }
     }
 }
 
@@ -251,6 +270,15 @@ private struct PerspectiveWalls: View {
                 path.closeSubpath()
             }
             .fill(LinearGradient(colors: [.black.opacity(0.06), .black.opacity(0.20)], startPoint: .leading, endPoint: .trailing))
+            // 地板：最亮
+            Path { path in
+                path.move(to: CGPoint(x: 0, y: h))
+                path.addLine(to: CGPoint(x: w, y: h))
+                path.addLine(to: CGPoint(x: w - inset, y: h - topInset * 0.6))
+                path.addLine(to: CGPoint(x: inset, y: h - topInset * 0.6))
+                path.closeSubpath()
+            }
+            .fill(.white.opacity(0.22))
         }
         .allowsHitTesting(false)
     }
@@ -278,14 +306,13 @@ private struct ShelfView: View {
     let theme: FridgeTheme
     let spec: ShelfSpec
     let isRack: Bool
-    let isFreezer: Bool
     let inset: CGFloat
 
     var body: some View {
         GeometryReader { proxy in
-            let boardHeight: CGFloat = min(max(proxy.size.height * 0.16, 12), 22)
-            let tile: CGFloat = min(max((proxy.size.height - boardHeight) * 0.98, 30), 140)
-            let layout = ShelfLayout(items: spec.items, tile: tile, available: proxy.size.width - inset * 2 - 12)
+            let boardHeight: CGFloat = min(max(proxy.size.height * 0.2, 14), 28)
+            let tile: CGFloat = min(max((proxy.size.height - boardHeight * 0.6) * 0.98, 30), 150)
+            let layout = ShelfLayout(items: spec.items, tile: tile, available: proxy.size.width - inset * 2 + 8)
 
             ZStack(alignment: .bottom) {
                 // 这一格的光：顶上亮（上一层板下的灯带），往下渐暗。
@@ -298,28 +325,28 @@ private struct ShelfView: View {
                 }
 
                 // 玻璃层板
-                GlassShelfShape(backInset: inset * 0.45)
+                GlassShelfShape(backInset: inset * 0.8)
                     .fill(
                         LinearGradient(
-                            colors: [theme.shelfEdge.opacity(0.55), theme.shelfEdge.opacity(0.85)],
+                            colors: [.white.opacity(0.45), theme.shelfEdge.opacity(0.9)],
                             startPoint: .top,
                             endPoint: .bottom
                         )
                     )
                     .frame(height: boardHeight)
-                    .padding(.horizontal, inset * 0.55)
+                    .padding(.horizontal, inset * 0.35)
                     .overlay(alignment: .bottom) {
                         // 前沿的灯带
                         Rectangle()
                             .fill(.white)
                             .frame(height: 2.5)
-                            .padding(.horizontal, inset * 0.55)
+                            .padding(.horizontal, inset * 0.35)
                             .shadow(color: .white.opacity(0.95), radius: 5, y: 3)
                             .shadow(color: .white.opacity(0.7), radius: 16, y: 10)
                     }
 
                 // 食材：站在层板前沿上，大小略有差别，挨得近一点。
-                HStack(alignment: .bottom, spacing: 4) {
+                HStack(alignment: .bottom, spacing: -2) {
                     ForEach(layout.visible) { item in
                         ProductView(item: item, size: layout.tile * Self.scale(for: item))
                     }
@@ -334,8 +361,8 @@ private struct ShelfView: View {
                     }
                     Spacer(minLength: 0)
                 }
-                .padding(.horizontal, inset + 6)
-                .padding(.bottom, boardHeight * 0.35)
+                .padding(.horizontal, inset * 0.8)
+                .padding(.bottom, boardHeight * 0.3)
 
                 if isRack {
                     // 门架前面的半透明挡条
@@ -345,8 +372,8 @@ private struct ShelfView: View {
                         .overlay(alignment: .top) {
                             Rectangle().fill(.white.opacity(0.75)).frame(height: 1.5)
                         }
-                        .padding(.horizontal, inset * 0.55)
-                        .padding(.bottom, boardHeight * 0.3)
+                        .padding(.horizontal, inset * 0.35)
+                        .padding(.bottom, boardHeight * 0.28)
                         .allowsHitTesting(false)
                 }
             }
@@ -365,7 +392,7 @@ private struct ShelfView: View {
     }
 }
 
-/// 架子上放得下几样：放不下就先把东西整体缩小一点（最多缩到 72%），还放不下才折成 "+N"。
+/// 架子上放得下几样：放不下就先把东西整体缩小一点（最多缩到 58%），还放不下才折成 "+N"。
 private struct ShelfLayout {
     let visible: [FoodItem]
     let overflow: Int
@@ -373,9 +400,9 @@ private struct ShelfLayout {
     let tile: CGFloat
 
     init(items: [FoodItem], tile: CGFloat, available: CGFloat) {
-        for factor in [1.0, 0.92, 0.84, 0.76, 0.72] {
+        for factor in [1.0, 0.92, 0.84, 0.76, 0.7, 0.64, 0.58] {
             let scaled = tile * factor
-            let total = items.reduce(CGFloat(0)) { $0 + ProductView.width(for: $1, size: scaled * 0.93) + 4 }
+            let total = items.reduce(CGFloat(0)) { $0 + ProductView.width(for: $1, size: scaled * 0.93) - 2 }
             if total <= available {
                 self.visible = items
                 self.overflow = 0
@@ -383,11 +410,11 @@ private struct ShelfLayout {
                 return
             }
         }
-        let scaled = tile * 0.72
+        let scaled = tile * 0.58
         var used: CGFloat = 0
         var visible: [FoodItem] = []
         for item in items {
-            let width = ProductView.width(for: item, size: scaled * 0.93) + 4
+            let width = ProductView.width(for: item, size: scaled * 0.93) - 2
             if used + width > available - 36 && !visible.isEmpty { break }
             used += width
             visible.append(item)
@@ -440,10 +467,11 @@ private struct FoldGap: View {
 
     var body: some View {
         LinearGradient(
-            colors: [.black.opacity(0.35), .black.opacity(0.85), .black.opacity(0.35)],
+            colors: [.black.opacity(0.3), .black.opacity(0.75), .black.opacity(0.3)],
             startPoint: isVertical ? .leading : .top,
             endPoint: isVertical ? .trailing : .bottom
         )
+        .background(Color(red: 0.45, green: 0.03, blue: 0.06))
     }
 }
 

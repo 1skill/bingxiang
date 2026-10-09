@@ -73,6 +73,7 @@ struct FridgeView: View {
                 InteriorView(theme: theme, items: items, isLightOn: door.isLightOn || !fridgeExperience, doorBlur: doorBlur) { location in
                     selectedLocation = location
                 }
+                .ignoresSafeArea(edges: [.top, .bottom])
                 .transition(.opacity)
             } else {
                 DoorView(

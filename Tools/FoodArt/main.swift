@@ -191,18 +191,22 @@ struct FoodArt {
         return cg
     }
 
-    /// 放进正方形画布，留一点边。
+    /// 按内容的轮廓裁，长边缩到 `size`，四周留 3% 的边。保留宽高比，瓶子就是细高的，面包就是扁的。
     static func squareFramed(_ image: CGImage, size: Int) -> CGImage {
-        let scale = Double(size) * 0.88 / Double(max(image.width, image.height))
+        let longest = Double(max(image.width, image.height))
+        let scale = Double(size) * 0.94 / longest
         let w = Double(image.width) * scale
         let h = Double(image.height) * scale
+        let pad = Double(size) * 0.03
+        let canvasW = Int((w + pad * 2).rounded(.up))
+        let canvasH = Int((h + pad * 2).rounded(.up))
         let context = CGContext(
-            data: nil, width: size, height: size, bitsPerComponent: 8, bytesPerRow: 0,
+            data: nil, width: canvasW, height: canvasH, bitsPerComponent: 8, bytesPerRow: 0,
             space: CGColorSpace(name: CGColorSpace.sRGB)!,
             bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
         )!
         context.interpolationQuality = .high
-        context.draw(image, in: CGRect(x: (Double(size) - w) / 2, y: (Double(size) - h) / 2, width: w, height: h))
+        context.draw(image, in: CGRect(x: pad, y: pad, width: w, height: h))
         return context.makeImage()!
     }
 

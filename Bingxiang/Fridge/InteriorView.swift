@@ -319,7 +319,7 @@ private struct ShelfView: View {
                     }
 
                 // 食材：站在层板前沿上，大小略有差别，挨得近一点。
-                HStack(alignment: .bottom, spacing: 2) {
+                HStack(alignment: .bottom, spacing: 4) {
                     ForEach(layout.visible) { item in
                         ProductView(item: item, size: tile * Self.scale(for: item))
                     }
@@ -374,7 +374,7 @@ private struct ShelfLayout {
         var used: CGFloat = 0
         var visible: [FoodItem] = []
         for item in items {
-            let width = ProductView.width(for: item, size: tile) * 0.95 + 2
+            let width = ProductView.width(for: item, size: tile * 0.93) + 4
             if used + width > available && !visible.isEmpty { break }
             used += width
             visible.append(item)
@@ -389,20 +389,22 @@ struct ProductView: View {
     let item: FoodItem
     let size: CGFloat
 
+    /// 按图片的宽高比占位：瓶子窄，面包宽。没有图的 emoji 按正方形。
     static func width(for item: FoodItem, size: CGFloat) -> CGFloat {
-        size
+        size * FoodArt.aspect(for: item.name)
     }
 
     var body: some View {
+        let width = Self.width(for: item, size: size)
         ZStack(alignment: .bottom) {
             Ellipse()
                 .fill(.black.opacity(0.30))
-                .frame(width: size * 0.85, height: size * 0.16)
+                .frame(width: width * 0.9, height: size * 0.14)
                 .blur(radius: 3)
-                .offset(y: size * 0.05)
+                .offset(y: size * 0.04)
             FoodArtView(item: item, size: size)
         }
-        .frame(width: size, height: size, alignment: .bottom)
+        .frame(width: width, height: size, alignment: .bottom)
         .overlay(alignment: .topTrailing) {
             if item.freshness != .fresh {
                 Circle()
@@ -431,17 +433,42 @@ private struct FoldGap: View {
     }
 }
 
+/// 食材图的查找和宽高比，带缓存。
+enum FoodArt {
+    private static var cache: [String: (image: UIImage?, aspect: CGFloat)] = [:]
+
+    static func image(for name: String) -> UIImage? {
+        entry(for: name).image
+    }
+
+    /// 宽 / 高，限制在 0.45...1.6 之间；没有图就是 1。
+    static func aspect(for name: String) -> CGFloat {
+        entry(for: name).aspect
+    }
+
+    private static func entry(for name: String) -> (image: UIImage?, aspect: CGFloat) {
+        if let cached = cache[name] { return cached }
+        var result: (image: UIImage?, aspect: CGFloat) = (nil, 1)
+        if let assetName = FoodCatalog.artName(for: name), let uiImage = UIImage(named: assetName) {
+            let ratio = uiImage.size.width / max(uiImage.size.height, 1)
+            result = (uiImage, min(max(ratio, 0.45), 1.6))
+        }
+        cache[name] = result
+        return result
+    }
+}
+
 /// 一样食材的图：资源目录里有生成好的图就用图，没有就用 emoji。
 struct FoodArtView: View {
     let item: FoodItem
     let size: CGFloat
 
     var body: some View {
-        if let name = FoodCatalog.artName(for: item.name), let uiImage = UIImage(named: name) {
+        if let uiImage = FoodArt.image(for: item.name) {
             Image(uiImage: uiImage)
                 .resizable()
                 .scaledToFit()
-                .frame(width: size, height: size)
+                .frame(width: size * FoodArt.aspect(for: item.name), height: size)
                 .shadow(color: .black.opacity(0.22), radius: 2, y: 2)
         } else {
             Text(item.emoji)

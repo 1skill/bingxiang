@@ -224,6 +224,12 @@
           "path": "Services",
           "children": [
             {
+              "path": "DuoAPIShim.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
               "path": "NotificationService.swift",
               "target-membership": [
                 "Bingxiang/compile-sources"

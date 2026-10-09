@@ -171,7 +171,7 @@ final class FoodItem {
     /// 给列表用的到期描述。
     var expiryDescription: String {
         let days = daysUntilExpiry
-        switch days {
+        return switch days {
         case ..<(-1): "过期 \(-days) 天"
         case -1: "昨天过期"
         case 0: "今天到期"

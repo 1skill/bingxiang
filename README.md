@@ -64,6 +64,17 @@ hinge half         # 90°，桌面模式
 
 第一次启动会放入一批示例食材、便签和历史记录，方便直接看效果。设置里可以再放一次。
 
+### 只有 Xcode 27.0 的时候
+
+iPhone Duo 的 API 只在 iOS 27.1 SDK 里有。手头只有 Xcode 27.0 时，可以带上 `DUO_API_SHIM` 编译条件，`Services/DuoAPIShim.swift` 会提供同名的空实现（铰链永远为 nil，分割区域永远为空），其余功能在普通 iPhone 模拟器上照常运行：
+
+```bash
+xcodebuild -project Bingxiang.xcodeproj -scheme Bingxiang \
+  -destination 'generic/platform=iOS Simulator' \
+  IPHONEOS_DEPLOYMENT_TARGET=27.0 \
+  SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) DUO_API_SHIM' build
+```
+
 ## 工程结构
 
 工程用的是 Xcode 27.1 的 JSON 工程格式（`Bingxiang.xcodeproj/project.xcproj`），每个源文件都在里面显式列出。新增文件时加一行：
@@ -107,7 +118,7 @@ GeometryReader { proxy in
 
 ## 已知限制
 
-- 这个仓库在没有 Xcode 的环境里写成，代码只做过语法检查，还没在 Xcode 27.1 里真正编译和跑过。第一次打开请留意编译器报错。
+- 代码已在 Xcode 27.0（带 `DUO_API_SHIM`）下编译通过并在 iPhone 17 Pro 模拟器上启动；铰链和折痕相关的行为还没有在 iPhone Duo 模拟器上验证。
 - 音效用的是系统音效 ID，不是自定义音频。
 - 还没做 iCloud 同步和条码扫描，这两项是接下来最值得加的。
 

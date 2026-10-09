@@ -65,7 +65,8 @@ struct FridgeView: View {
 
     var body: some View {
         ZStack {
-            (showsInterior ? Color.black : theme.exterior.opacity(0.85))
+            (showsInterior ? theme.exterior.opacity(0.55) : theme.exterior.opacity(0.85))
+                .background(.black)
                 .ignoresSafeArea()
 
             if showsInterior {

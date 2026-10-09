@@ -125,7 +125,7 @@ struct ShelfSpec: Identifiable {
     var isDrawer = false
 }
 
-/// 一半冰箱：上面冷藏，下面冷冻，中间一道缝。
+/// 一半冰箱：上面冷藏，下面冷冻，外面一圈红色箱体。
 private struct CompartmentColumn: View {
     let theme: FridgeTheme
     let fridgeShelves: [ShelfSpec]
@@ -136,60 +136,149 @@ private struct CompartmentColumn: View {
     var body: some View {
         GeometryReader { proxy in
             let fridgeHeight = proxy.size.height * FridgeMetrics.fridgeFraction
-            VStack(spacing: 0) {
-                zone(shelves: fridgeShelves, wall: theme.interior)
-                    .frame(height: fridgeHeight - 4)
-                Rectangle()
-                    .fill(.black.opacity(0.55))
-                    .frame(height: 8)
-                zone(shelves: freezerShelves, wall: theme.freezerInterior)
+            VStack(spacing: 6) {
+                CompartmentBox(theme: theme, shelves: fridgeShelves, wall: theme.interior, isDoor: isDoor, isFreezer: false, onSelect: onSelect)
+                    .frame(height: fridgeHeight - 6)
+                CompartmentBox(theme: theme, shelves: freezerShelves, wall: theme.freezerInterior, isDoor: isDoor, isFreezer: true, onSelect: onSelect)
             }
         }
-        .padding(isDoor ? EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 4) : EdgeInsets(top: 8, leading: 4, bottom: 8, trailing: 8))
-        .background(.black.opacity(0.7))
+        .padding(EdgeInsets(top: 10, leading: isDoor ? 10 : 6, bottom: 10, trailing: isDoor ? 6 : 10))
+        .background(liner)
     }
 
-    private func zone(shelves: [ShelfSpec], wall: Color) -> some View {
-        VStack(spacing: 0) {
-            ForEach(shelves) { spec in
-                ShelfView(theme: theme, spec: spec, isRack: isDoor)
-                    .onTapGesture { onSelect(spec.location) }
-            }
-        }
-        .background {
-            ZStack {
-                wall
-                // 四周暗一点，有进深。
-                RadialGradient(
-                    colors: [.clear, .black.opacity(0.22)],
-                    center: .center,
-                    startRadius: 40,
-                    endRadius: 600
-                )
-            }
-        }
-        .clipShape(.rect(cornerRadius: 22))
+    /// 箱体：比门板深一点的红。
+    private var liner: some View {
+        LinearGradient(
+            colors: [theme.exterior.opacity(0.95), theme.exterior.opacity(0.75)],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .overlay(.black.opacity(0.35))
     }
 }
 
-/// 一层架子：顶上有灯带，底下是层板，中间摆食材。门架的话前面多一道挡条。
+/// 一个有深度的格子：看得见侧壁、顶壁和地板，层板有厚度，层板下面有灯带。
+private struct CompartmentBox: View {
+    let theme: FridgeTheme
+    let shelves: [ShelfSpec]
+    let wall: Color
+    let isDoor: Bool
+    let isFreezer: Bool
+    let onSelect: (StorageLocation) -> Void
+
+    var body: some View {
+        GeometryReader { proxy in
+            let size = proxy.size
+            // 透视：侧壁往里收这么多，就像从正前方略高一点看进去。
+            let inset = min(size.width * 0.07, 34)
+            let topInset = min(size.height * 0.06, 24)
+            ZStack {
+                // 后壁：中间亮，四周暗。
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            colors: [wall.opacity(0.95), wall, wall.opacity(0.9)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                // 顶壁、侧壁、地板
+                PerspectiveWalls(inset: inset, topInset: topInset, wall: wall)
+                // 顶上的灯带
+                Capsule()
+                    .fill(.white)
+                    .frame(width: size.width - inset * 2 - 24, height: 4)
+                    .shadow(color: .white.opacity(0.9), radius: 10)
+                    .shadow(color: .white.opacity(0.6), radius: 24)
+                    .position(x: size.width / 2, y: topInset + 3)
+
+                // 层架
+                VStack(spacing: 0) {
+                    ForEach(shelves) { spec in
+                        ShelfView(theme: theme, spec: spec, isRack: isDoor, isFreezer: isFreezer)
+                            .onTapGesture { onSelect(spec.location) }
+                    }
+                }
+                .padding(.horizontal, inset)
+                .padding(.top, topInset)
+                .padding(.bottom, 6)
+            }
+            .clipShape(.rect(cornerRadius: 18))
+            .overlay {
+                RoundedRectangle(cornerRadius: 18)
+                    .strokeBorder(.black.opacity(0.25), lineWidth: 1)
+            }
+        }
+    }
+}
+
+/// 顶壁、左右侧壁和地板，四个梯形。
+private struct PerspectiveWalls: View {
+    let inset: CGFloat
+    let topInset: CGFloat
+    let wall: Color
+
+    var body: some View {
+        GeometryReader { proxy in
+            let w = proxy.size.width
+            let h = proxy.size.height
+            // 顶壁最暗
+            Path { path in
+                path.move(to: .zero)
+                path.addLine(to: CGPoint(x: w, y: 0))
+                path.addLine(to: CGPoint(x: w - inset, y: topInset))
+                path.addLine(to: CGPoint(x: inset, y: topInset))
+                path.closeSubpath()
+            }
+            .fill(.black.opacity(0.28))
+            // 左侧壁
+            Path { path in
+                path.move(to: .zero)
+                path.addLine(to: CGPoint(x: inset, y: topInset))
+                path.addLine(to: CGPoint(x: inset, y: h))
+                path.addLine(to: CGPoint(x: 0, y: h))
+                path.closeSubpath()
+            }
+            .fill(LinearGradient(colors: [.black.opacity(0.22), .black.opacity(0.10)], startPoint: .leading, endPoint: .trailing))
+            // 右侧壁
+            Path { path in
+                path.move(to: CGPoint(x: w, y: 0))
+                path.addLine(to: CGPoint(x: w, y: h))
+                path.addLine(to: CGPoint(x: w - inset, y: h))
+                path.addLine(to: CGPoint(x: w - inset, y: topInset))
+                path.closeSubpath()
+            }
+            .fill(LinearGradient(colors: [.black.opacity(0.10), .black.opacity(0.22)], startPoint: .leading, endPoint: .trailing))
+            // 地板最亮
+            Path { path in
+                path.move(to: CGPoint(x: 0, y: h))
+                path.addLine(to: CGPoint(x: w, y: h))
+                path.addLine(to: CGPoint(x: w - inset, y: h - 6))
+                path.addLine(to: CGPoint(x: inset, y: h - 6))
+                path.closeSubpath()
+            }
+            .fill(.white.opacity(0.25))
+        }
+        .allowsHitTesting(false)
+    }
+}
+
+/// 一层架子：食材站在层板上，层板有顶面和前沿，前沿下面一条亮灯带。
+/// 门架的话前面多一道半透明挡条。
 private struct ShelfView: View {
     let theme: FridgeTheme
     let spec: ShelfSpec
     let isRack: Bool
+    let isFreezer: Bool
 
     var body: some View {
         GeometryReader { proxy in
-            let tile: CGFloat = min(max(proxy.size.height * (isRack ? 0.50 : 0.54), 28), 64)
-            let layout = ShelfLayout(items: spec.items, tile: tile, available: proxy.size.width - 24)
+            let boardHeight: CGFloat = spec.isDrawer ? 16 : 12
+            let tile: CGFloat = min(max((proxy.size.height - boardHeight) * (isRack ? 0.66 : 0.74), 30), 84)
+            let layout = ShelfLayout(items: spec.items, tile: tile, available: proxy.size.width - 28)
 
             ZStack(alignment: .bottom) {
-                // 灯带：从上一层板底下打下来的光。
-                LinearGradient(colors: [.white.opacity(0.75), .white.opacity(0)], startPoint: .top, endPoint: .bottom)
-                    .frame(height: 26)
-                    .frame(maxHeight: .infinity, alignment: .top)
-
-                HStack(alignment: .bottom, spacing: 8) {
+                HStack(alignment: .bottom, spacing: 10) {
                     ForEach(layout.visible) { item in
                         ProductView(item: item, size: tile)
                     }
@@ -204,43 +293,47 @@ private struct ShelfView: View {
                     }
                     Spacer(minLength: 0)
                 }
-                .padding(.horizontal, 12)
-                .padding(.bottom, spec.isDrawer ? 14 : 9)
+                .padding(.horizontal, 14)
+                .padding(.bottom, boardHeight + 2)
 
-                // 层板
+                // 层板：顶面 + 前沿 + 前沿下面的灯带
                 VStack(spacing: 0) {
-                    Rectangle().fill(theme.shelfEdge).frame(height: 2)
-                    Rectangle().fill(theme.shelf).frame(height: spec.isDrawer ? 14 : 8)
-                    Rectangle().fill(.black.opacity(0.18)).frame(height: 2)
+                    Rectangle()
+                        .fill(LinearGradient(colors: [theme.shelfEdge, theme.shelfEdge.opacity(0.85)], startPoint: .top, endPoint: .bottom))
+                        .frame(height: boardHeight * 0.45)
+                    Rectangle()
+                        .fill(LinearGradient(colors: [theme.shelf, theme.shelf.opacity(0.8)], startPoint: .top, endPoint: .bottom))
+                        .frame(height: boardHeight * 0.55)
+                        .overlay(alignment: .bottom) {
+                            Rectangle()
+                                .fill(.white.opacity(0.95))
+                                .frame(height: 2)
+                                .shadow(color: .white, radius: 6, y: 4)
+                                .shadow(color: .white.opacity(0.8), radius: 14, y: 8)
+                        }
                 }
+                .padding(.horizontal, -2)
 
                 if isRack {
-                    // 门架前面的挡条，半透明。
+                    // 门架前面的挡条，半透明塑料。
                     Rectangle()
-                        .fill(theme.shelfEdge.opacity(0.35))
-                        .frame(height: 20)
+                        .fill(theme.shelfEdge.opacity(0.42))
+                        .frame(height: 22)
                         .overlay(alignment: .top) {
-                            Rectangle().fill(.white.opacity(0.6)).frame(height: 1)
+                            Rectangle().fill(.white.opacity(0.7)).frame(height: 1.5)
                         }
-                        .padding(.bottom, 10)
+                        .padding(.bottom, boardHeight)
                         .allowsHitTesting(false)
                 }
 
                 if spec.isDrawer {
-                    RoundedRectangle(cornerRadius: 8)
-                        .strokeBorder(.white.opacity(0.55), lineWidth: 1.5)
-                        .padding(.horizontal, 6)
-                        .padding(.top, 10)
-                        .padding(.bottom, 14)
+                    RoundedRectangle(cornerRadius: 10)
+                        .strokeBorder(.white.opacity(0.6), lineWidth: 2)
+                        .padding(.horizontal, 4)
+                        .padding(.top, 8)
+                        .padding(.bottom, boardHeight + 2)
                         .allowsHitTesting(false)
                 }
-            }
-            .overlay(alignment: .topLeading) {
-                Text(spec.location.rawValue)
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(.black.opacity(0.35))
-                    .padding(.leading, 8)
-                    .padding(.top, 5)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -316,13 +409,13 @@ struct ProductView: View {
     }
 }
 
-/// 折痕处的一道暗缝。
+/// 折痕处的合页：两半箱体之间一道深色的缝。
 private struct FoldGap: View {
     let isVertical: Bool
 
     var body: some View {
         LinearGradient(
-            colors: [.black.opacity(0.15), .black.opacity(0.6), .black.opacity(0.15)],
+            colors: [.black.opacity(0.35), .black.opacity(0.85), .black.opacity(0.35)],
             startPoint: isVertical ? .leading : .top,
             endPoint: isVertical ? .trailing : .bottom
         )

@@ -181,9 +181,7 @@ private struct ShelfView: View {
     var body: some View {
         GeometryReader { proxy in
             let tile: CGFloat = min(max(proxy.size.height * (isRack ? 0.50 : 0.54), 28), 64)
-            let capacity = max(Int((proxy.size.width - 20) / (tile + 6)), 1)
-            let visible = Array(spec.items.prefix(capacity))
-            let overflow = spec.items.count - visible.count
+            let layout = ShelfLayout(items: spec.items, tile: tile, available: proxy.size.width - 24)
 
             ZStack(alignment: .bottom) {
                 // 灯带：从上一层板底下打下来的光。
@@ -191,12 +189,12 @@ private struct ShelfView: View {
                     .frame(height: 26)
                     .frame(maxHeight: .infinity, alignment: .top)
 
-                HStack(alignment: .bottom, spacing: 6) {
-                    ForEach(visible) { item in
-                        ItemBubble(item: item, size: tile)
+                HStack(alignment: .bottom, spacing: 8) {
+                    ForEach(layout.visible) { item in
+                        ProductView(item: item, size: tile)
                     }
-                    if overflow > 0 {
-                        Text("+\(overflow)")
+                    if layout.overflow > 0 {
+                        Text("+\(layout.overflow)")
                             .font(.system(size: 11, weight: .bold))
                             .foregroundStyle(.white)
                             .padding(.horizontal, 6)
@@ -206,8 +204,8 @@ private struct ShelfView: View {
                     }
                     Spacer(minLength: 0)
                 }
-                .padding(.horizontal, 10)
-                .padding(.bottom, 10)
+                .padding(.horizontal, 12)
+                .padding(.bottom, spec.isDrawer ? 14 : 9)
 
                 // 层板
                 VStack(spacing: 0) {
@@ -253,6 +251,73 @@ private struct ShelfView: View {
     }
 }
 
+/// 架子上放得下几样：数量多的食材占得宽，放不下的折成 "+N"。
+private struct ShelfLayout {
+    let visible: [FoodItem]
+    let overflow: Int
+
+    init(items: [FoodItem], tile: CGFloat, available: CGFloat) {
+        var used: CGFloat = 0
+        var visible: [FoodItem] = []
+        for item in items {
+            let width = ProductView.width(for: item, size: tile) + 8
+            if used + width > available && !visible.isEmpty { break }
+            used += width
+            visible.append(item)
+        }
+        self.visible = visible
+        self.overflow = items.count - visible.count
+    }
+}
+
+/// 一样食材摆在架子上：数量多的显示好几份叠在一起，底下有一团接触阴影。
+struct ProductView: View {
+    let item: FoodItem
+    let size: CGFloat
+
+    /// 这些单位是一个一个数的，多买了就摆好几个；"份"之类的只摆一个。
+    private static let countableUnits: Set<String> = ["个", "根", "盒", "瓶", "罐", "杯", "块", "袋", "包", "串", "颗", "条", "头", "把"]
+
+    static func copies(for item: FoodItem) -> Int {
+        guard countableUnits.contains(item.unit) else { return 1 }
+        return max(1, min(Int(item.quantity.rounded()), 3))
+    }
+
+    static func width(for item: FoodItem, size: CGFloat) -> CGFloat {
+        size + CGFloat(copies(for: item) - 1) * size * 0.42
+    }
+
+    var body: some View {
+        let copies = Self.copies(for: item)
+        ZStack(alignment: .bottomLeading) {
+            // 接触阴影
+            Ellipse()
+                .fill(.black.opacity(0.28))
+                .frame(width: Self.width(for: item, size: size) * 0.9, height: size * 0.18)
+                .blur(radius: 3)
+                .offset(x: Self.width(for: item, size: size) * 0.05, y: size * 0.06)
+            ForEach(0..<copies, id: \.self) { index in
+                Text(item.emoji)
+                    .font(.system(size: size * 0.84))
+                    .frame(width: size, height: size)
+                    .offset(x: CGFloat(index) * size * 0.42, y: CGFloat(index) * -1.5)
+            }
+        }
+        .frame(width: Self.width(for: item, size: size), height: size, alignment: .bottomLeading)
+        .overlay(alignment: .topTrailing) {
+            if item.freshness != .fresh {
+                Circle()
+                    .fill(FridgeMetrics.freshnessColor(item.freshness))
+                    .frame(width: size * 0.26, height: size * 0.26)
+                    .overlay {
+                        Circle().strokeBorder(.white, lineWidth: 1.5)
+                    }
+            }
+        }
+        .accessibilityLabel("\(item.name)，\(item.quantityDescription)，\(item.expiryDescription)")
+    }
+}
+
 /// 折痕处的一道暗缝。
 private struct FoldGap: View {
     let isVertical: Bool
@@ -263,29 +328,5 @@ private struct FoldGap: View {
             startPoint: isVertical ? .leading : .top,
             endPoint: isVertical ? .trailing : .bottom
         )
-    }
-}
-
-/// 一颗食材 emoji，底下有影子，角上一个小点表示新鲜度。
-struct ItemBubble: View {
-    let item: FoodItem
-    let size: CGFloat
-
-    var body: some View {
-        Text(item.emoji)
-            .font(.system(size: size * 0.82))
-            .shadow(color: .black.opacity(0.35), radius: 3, y: 3)
-            .frame(width: size, height: size)
-            .overlay(alignment: .topTrailing) {
-                if item.freshness != .fresh {
-                    Circle()
-                        .fill(FridgeMetrics.freshnessColor(item.freshness))
-                        .frame(width: size * 0.26, height: size * 0.26)
-                        .overlay {
-                            Circle().strokeBorder(.white, lineWidth: 1.5)
-                        }
-                }
-            }
-            .accessibilityLabel("\(item.name)，\(item.expiryDescription)")
     }
 }

@@ -13,6 +13,7 @@ struct DoorView: View {
     let door: DoorController
     let onTapNote: (DoorNote) -> Void
     let onTapPhoto: (DoorPhoto) -> Void
+    let onTapPen: () -> Void
     @Binding var pickedPhoto: PhotosPickerItem?
 
     @AppStorage(SettingsKeys.doorLetters) private var doorLetters = ""
@@ -70,6 +71,8 @@ struct DoorView: View {
                 // 相机磁贴：点一下贴照片
                 CameraMagnet(selection: $pickedPhoto)
                     .position(x: width * 0.60, y: fridgeDoor.height * 0.47)
+                PenMagnet(action: onTapPen)
+                    .position(x: width * 0.73, y: fridgeDoor.height * 0.47)
 
                 // 用户贴的东西，都可以拖
                 if !doorLetters.isEmpty {

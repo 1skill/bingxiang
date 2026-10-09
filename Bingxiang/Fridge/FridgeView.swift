@@ -43,6 +43,7 @@ struct FridgeView: View {
     @State private var photoToDelete: DoorPhoto?
     @State private var pickedPhoto: PhotosPickerItem?
     @State private var isLettersPresented = false
+    @State private var isDrawingPresented = false
     @State private var lettersDraft = ""
     @State private var isAjarWarningShown = false
 
@@ -82,6 +83,7 @@ struct FridgeView: View {
                     door: door,
                     onTapNote: { editingNote = $0 },
                     onTapPhoto: { photoToDelete = $0 },
+                    onTapPen: { isDrawingPresented = true },
                     pickedPhoto: $pickedPhoto
                 )
                 .ignoresSafeArea(edges: [.top, .bottom])
@@ -133,10 +135,13 @@ struct FridgeView: View {
         .sheet(isPresented: $isNewNotePresented) {
             DoorNoteEditor(note: nil)
         }
+        .sheet(isPresented: $isDrawingPresented) {
+            DrawingNoteSheet()
+        }
         .sheet(item: $editingNote) { note in
             DoorNoteEditor(note: note)
         }
-        .confirmationDialog("撕掉这张照片？", isPresented: Binding(
+        .confirmationDialog(photoToDelete?.isDrawing == true ? "撕掉这张手写便签？" : "撕掉这张照片？", isPresented: Binding(
             get: { photoToDelete != nil },
             set: { if !$0 { photoToDelete = nil } }
         ), titleVisibility: .visible) {
@@ -201,6 +206,7 @@ struct FridgeView: View {
             }
             Section("冰箱门") {
                 Button("贴一张便签", systemImage: "note.text.badge.plus") { isNewNotePresented = true }
+                Button("手写便签", systemImage: "pencil.and.scribble") { isDrawingPresented = true }
                 Button("字母拼字", systemImage: "textformat.abc") {
                     lettersDraft = doorLetters
                     isLettersPresented = true

@@ -122,6 +122,12 @@
               ]
             },
             {
+              "path": "DrawingNoteSheet.swift",
+              "target-membership": [
+                "Bingxiang/compile-sources"
+              ]
+            },
+            {
               "path": "FridgeMetrics.swift",
               "target-membership": [
                 "Bingxiang/compile-sources"

@@ -140,17 +140,73 @@ struct PolaroidView: View {
     }
 }
 
+/// 手写的涂鸦便签：便签纸上一张透明的笔迹图。
+struct DrawnNoteView: View {
+    let imageData: Data
+    let paperColor: String
+
+    var body: some View {
+        Group {
+            if let uiImage = UIImage(data: imageData) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                Color.clear
+            }
+        }
+        .frame(width: 96, height: 96)
+        .background(DoorNote.color(named: paperColor), in: .rect(cornerRadius: 3))
+        .overlay(alignment: .top) {
+            Circle()
+                .fill(Color.red.gradient)
+                .frame(width: 9, height: 9)
+                .shadow(color: .black.opacity(0.3), radius: 1, y: 1)
+                .offset(y: -3)
+        }
+        .shadow(color: .black.opacity(0.3), radius: 3, y: 3)
+    }
+}
+
+/// 马克笔磁贴：点一下写字画画。
+struct PenMagnet: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 0) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(Color(red: 1.0, green: 0.55, blue: 0.15).gradient)
+                    .frame(width: 9, height: 12)
+                Capsule()
+                    .fill(LinearGradient(colors: [Color(red: 0.25, green: 0.45, blue: 0.95), Color(red: 0.10, green: 0.25, blue: 0.70)], startPoint: .leading, endPoint: .trailing))
+                    .frame(width: 8, height: 44)
+            }
+            .rotationEffect(.degrees(8))
+            .shadow(color: .black.opacity(0.4), radius: 3, y: 2)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("手写便签")
+    }
+}
+
 struct DraggablePhoto: View {
     @Bindable var photo: DoorPhoto
     let bounds: CGSize
     let onTap: () -> Void
 
     var body: some View {
-        PolaroidView(imageData: photo.imageData)
+        Group {
+            if photo.isDrawing {
+                DrawnNoteView(imageData: photo.imageData, paperColor: photo.paperColor)
+            } else {
+                PolaroidView(imageData: photo.imageData)
+            }
+        }
             .rotationEffect(.degrees(photo.rotation))
             .onTapGesture(perform: onTap)
             .draggableOnDoor(posX: $photo.posX, posY: $photo.posY, bounds: bounds)
-            .accessibilityLabel("拍立得照片")
+            .accessibilityLabel(photo.isDrawing ? "手写便签" : "拍立得照片")
     }
 }
 

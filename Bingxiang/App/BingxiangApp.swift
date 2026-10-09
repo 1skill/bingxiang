@@ -7,6 +7,6 @@ struct BingxiangApp: App {
         WindowGroup {
             RootView()
         }
-        .modelContainer(for: [FoodItem.self, ShoppingItem.self, DoorNote.self])
+        .modelContainer(for: [FoodItem.self, ShoppingItem.self, DoorNote.self, DoorPhoto.self])
     }
 }

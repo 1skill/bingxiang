@@ -1,3 +1,4 @@
+import PhotosUI
 import SwiftData
 import SwiftUI
 
@@ -8,8 +9,15 @@ struct DoorView: View {
     let items: [FoodItem]
     let shoppingItems: [ShoppingItem]
     let notes: [DoorNote]
+    let photos: [DoorPhoto]
     let door: DoorController
     let onTapNote: (DoorNote) -> Void
+    let onTapPhoto: (DoorPhoto) -> Void
+    @Binding var pickedPhoto: PhotosPickerItem?
+
+    @AppStorage(SettingsKeys.doorLetters) private var doorLetters = ""
+    @AppStorage(SettingsKeys.doorLettersX) private var doorLettersX = 0.42
+    @AppStorage(SettingsKeys.doorLettersY) private var doorLettersY = 0.62
 
     var body: some View {
         GeometryReader { proxy in
@@ -40,7 +48,7 @@ struct DoorView: View {
                 DotMagnet(color: Color(red: 1.0, green: 0.80, blue: 0.10))
                     .position(x: width * 0.50, y: fridgeDoor.height * 0.20)
                 DotMagnet(color: Color(red: 0.20, green: 0.55, blue: 1.0))
-                    .position(x: width * 0.70, y: fridgeDoor.height * 0.56)
+                    .position(x: width * 0.78, y: fridgeDoor.height * 0.60)
                 DotMagnet(color: Color(red: 0.20, green: 0.80, blue: 0.35))
                     .position(x: width * 0.16, y: fridgeDoor.height * 0.90)
                 Image(systemName: "heart.fill")
@@ -59,7 +67,20 @@ struct DoorView: View {
                     .rotationEffect(.degrees(-2))
                     .position(x: width * 0.70, y: freezerDoor.minY + freezerDoor.height * 0.62)
 
-                // 用户贴的便签，可以拖
+                // 相机磁贴：点一下贴照片
+                CameraMagnet(selection: $pickedPhoto)
+                    .position(x: width * 0.60, y: fridgeDoor.height * 0.47)
+
+                // 用户贴的东西，都可以拖
+                if !doorLetters.isEmpty {
+                    LetterMagnetsView(text: doorLetters)
+                        .draggableOnDoor(posX: $doorLettersX, posY: $doorLettersY, bounds: fridgeDoor.size)
+                }
+                ForEach(photos) { photo in
+                    DraggablePhoto(photo: photo, bounds: fridgeDoor.size) {
+                        onTapPhoto(photo)
+                    }
+                }
                 ForEach(notes) { note in
                     DraggableNote(note: note, bounds: fridgeDoor.size) {
                         onTapNote(note)
@@ -199,84 +220,5 @@ private struct DotMagnet: View {
             }
             .frame(width: 18, height: 18)
             .shadow(color: .black.opacity(0.35), radius: 2, y: 2)
-    }
-}
-
-/// 贴在门上的便签：顶上一颗磁钉，几行手写体的字。
-struct StickyNoteView: View {
-    static let yellow = Color(red: 1.0, green: 0.93, blue: 0.45)
-    static let sky = Color(red: 0.70, green: 0.88, blue: 1.0)
-    static let pink = Color(red: 1.0, green: 0.76, blue: 0.84)
-
-    let color: Color
-    let title: String?
-    let lines: [String]
-    let pin: Color
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            if let title {
-                Text(title)
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
-                    .padding(.bottom, 1)
-            }
-            ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
-                Text(line)
-                    .font(.system(size: 10.5, weight: .medium, design: .rounded))
-                    .lineLimit(1)
-            }
-        }
-        .foregroundStyle(.black.opacity(0.78))
-        .padding(.horizontal, 9)
-        .padding(.top, 11)
-        .padding(.bottom, 9)
-        .frame(width: 112, alignment: .topLeading)
-        .background(color, in: .rect(cornerRadius: 3))
-        .overlay(alignment: .top) {
-            Circle()
-                .fill(pin.gradient)
-                .frame(width: 9, height: 9)
-                .shadow(color: .black.opacity(0.3), radius: 1, y: 1)
-                .offset(y: -3)
-        }
-        .shadow(color: .black.opacity(0.3), radius: 3, y: 3)
-    }
-}
-
-/// 用户贴的便签，拖到哪儿就记在哪儿。
-private struct DraggableNote: View {
-    @Bindable var note: DoorNote
-    let bounds: CGSize
-    let onTap: () -> Void
-
-    @State private var dragOffset: CGSize = .zero
-
-    var body: some View {
-        StickyNoteView(color: note.color, title: nil, lines: noteLines, pin: .red)
-            .rotationEffect(.degrees(note.rotation))
-            .position(
-                x: bounds.width * note.posX + dragOffset.width,
-                y: bounds.height * note.posY + dragOffset.height
-            )
-            .onTapGesture(perform: onTap)
-            .gesture(
-                DragGesture(minimumDistance: 6)
-                    .onChanged { value in
-                        dragOffset = value.translation
-                    }
-                    .onEnded { value in
-                        let x = (bounds.width * note.posX + value.translation.width) / bounds.width
-                        let y = (bounds.height * note.posY + value.translation.height) / bounds.height
-                        note.posX = min(max(x, 0.14), 0.86)
-                        note.posY = min(max(y, 0.10), 0.92)
-                        dragOffset = .zero
-                    }
-            )
-            .accessibilityLabel("便签：\(note.text)")
-    }
-
-    private var noteLines: [String] {
-        let parts = note.text.split(separator: "\n").map(String.init)
-        return parts.isEmpty ? [note.text] : Array(parts.prefix(3))
     }
 }

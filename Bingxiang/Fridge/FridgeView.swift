@@ -1,3 +1,4 @@
+import PhotosUI
 import SwiftData
 import SwiftUI
 
@@ -10,6 +11,9 @@ import SwiftUI
 ///
 /// 铰链只用来做效果；布局听 `reservedRegions(kind: .division)` 的。
 struct FridgeView: View {
+    @Binding var selection: AppTab
+
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
@@ -19,10 +23,13 @@ struct FridgeView: View {
     private var shoppingItems: [ShoppingItem]
     @Query(sort: \DoorNote.createdDate)
     private var notes: [DoorNote]
+    @Query(sort: \DoorPhoto.createdDate)
+    private var photos: [DoorPhoto]
 
     @AppStorage(SettingsKeys.fridgeExperience) private var fridgeExperience = true
     @AppStorage(SettingsKeys.doorAjarSeconds) private var doorAjarSeconds = 90
     @AppStorage(SettingsKeys.fridgeTheme) private var themeID = FridgeTheme.cherryBlossom.id
+    @AppStorage(SettingsKeys.doorLetters) private var doorLetters = ""
 
     @State private var door = DoorController()
     @State private var hingeDegrees: Double?
@@ -33,6 +40,10 @@ struct FridgeView: View {
     @State private var isColoursPresented = false
     @State private var isNewNotePresented = false
     @State private var editingNote: DoorNote?
+    @State private var photoToDelete: DoorPhoto?
+    @State private var pickedPhoto: PhotosPickerItem?
+    @State private var isLettersPresented = false
+    @State private var lettersDraft = ""
     @State private var isAjarWarningShown = false
 
     private var theme: FridgeTheme { FridgeTheme.named(themeID) }
@@ -62,9 +73,18 @@ struct FridgeView: View {
                 }
                 .transition(.opacity)
             } else {
-                DoorView(theme: theme, items: items, shoppingItems: shoppingItems, notes: notes, door: door) { note in
-                    editingNote = note
-                }
+                DoorView(
+                    theme: theme,
+                    items: items,
+                    shoppingItems: shoppingItems,
+                    notes: notes,
+                    photos: photos,
+                    door: door,
+                    onTapNote: { editingNote = $0 },
+                    onTapPhoto: { photoToDelete = $0 },
+                    pickedPhoto: $pickedPhoto
+                )
+                .ignoresSafeArea(edges: [.top, .bottom])
                 .transition(.opacity)
             }
         }
@@ -116,6 +136,35 @@ struct FridgeView: View {
         .sheet(item: $editingNote) { note in
             DoorNoteEditor(note: note)
         }
+        .confirmationDialog("撕掉这张照片？", isPresented: Binding(
+            get: { photoToDelete != nil },
+            set: { if !$0 { photoToDelete = nil } }
+        ), titleVisibility: .visible) {
+            Button("撕掉", role: .destructive) {
+                if let photoToDelete {
+                    modelContext.delete(photoToDelete)
+                }
+                photoToDelete = nil
+            }
+        }
+        .alert("字母拼字", isPresented: $isLettersPresented) {
+            TextField("最多 8 个字", text: $lettersDraft)
+            Button("贴上") {
+                doorLetters = String(lettersDraft.trimmingCharacters(in: .whitespaces).prefix(8))
+            }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("用五颜六色的字母磁贴在门上拼一个词，贴上以后可以拖。清空就是拿掉。")
+        }
+        .onChange(of: pickedPhoto) { _, item in
+            guard let item else { return }
+            Task {
+                if let data = await DoorPhotoImporter.imageData(from: item) {
+                    modelContext.insert(DoorPhoto(imageData: data))
+                }
+                pickedPhoto = nil
+            }
+        }
         // 👇 铰链 API：角度喂给 DoorController，由它决定灯亮不亮、门算不算开了。
         .onHingeChange { _, newContext in
             hingeDegrees = newContext.hinge?.angle.degrees
@@ -146,12 +195,25 @@ struct FridgeView: View {
 
     private var moreMenu: some View {
         Menu {
-            Button("快速添加常见食材", systemImage: "square.grid.2x2") { isQuickAddPresented = true }
-            Button("手动添加", systemImage: "square.and.pencil") { isAddPresented = true }
-            Button("贴一张便签", systemImage: "note.text.badge.plus") { isNewNotePresented = true }
-            Divider()
-            Button("颜色", systemImage: "paintpalette") { isColoursPresented = true }
-            Button("设置", systemImage: "gearshape") { isSettingsPresented = true }
+            Section("食材") {
+                Button("快速添加常见食材", systemImage: "square.grid.2x2") { isQuickAddPresented = true }
+                Button("手动添加", systemImage: "square.and.pencil") { isAddPresented = true }
+            }
+            Section("冰箱门") {
+                Button("贴一张便签", systemImage: "note.text.badge.plus") { isNewNotePresented = true }
+                Button("字母拼字", systemImage: "textformat.abc") {
+                    lettersDraft = doorLetters
+                    isLettersPresented = true
+                }
+                Button("颜色", systemImage: "paintpalette") { isColoursPresented = true }
+            }
+            Section("更多") {
+                Button("清单", systemImage: "list.bullet.clipboard") { selection = .inventory }
+                Button("购物", systemImage: "cart") { selection = .shopping }
+                Button("菜谱", systemImage: "frying.pan") { selection = .recipes }
+                Button("统计", systemImage: "chart.bar") { selection = .stats }
+                Button("设置", systemImage: "gearshape") { isSettingsPresented = true }
+            }
         } label: {
             Image(systemName: "ellipsis")
                 .font(.system(size: 18, weight: .bold))
@@ -229,6 +291,7 @@ private struct ShelfSheet: View {
 }
 
 #Preview {
-    FridgeView()
-        .modelContainer(for: [FoodItem.self, ShoppingItem.self, DoorNote.self], inMemory: true)
+    @Previewable @State var selection: AppTab = .fridge
+    FridgeView(selection: $selection)
+        .modelContainer(for: [FoodItem.self, ShoppingItem.self, DoorNote.self, DoorPhoto.self], inMemory: true)
 }

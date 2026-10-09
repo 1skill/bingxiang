@@ -120,5 +120,5 @@ struct InventoryListView: View {
 
 #Preview {
     InventoryListView()
-        .modelContainer(for: [FoodItem.self, ShoppingItem.self, DoorNote.self], inMemory: true)
+        .modelContainer(for: [FoodItem.self, ShoppingItem.self, DoorNote.self, DoorPhoto.self], inMemory: true)
 }

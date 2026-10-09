@@ -4,6 +4,9 @@ import Foundation
 enum SettingsKeys {
     static let fridgeExperience = "fridgeExperience"
     static let fridgeTheme = "fridgeTheme"
+    static let doorLetters = "doorLetters"
+    static let doorLettersX = "doorLettersX"
+    static let doorLettersY = "doorLettersY"
     static let soundEnabled = "soundEnabled"
     static let doorAjarSeconds = "doorAjarSeconds"
     static let expiryLeadDays = "expiryLeadDays"

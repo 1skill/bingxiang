@@ -201,5 +201,5 @@ private struct ShoppingRow: View {
 
 #Preview {
     ShoppingListView()
-        .modelContainer(for: [FoodItem.self, ShoppingItem.self, DoorNote.self], inMemory: true)
+        .modelContainer(for: [FoodItem.self, ShoppingItem.self, DoorNote.self, DoorPhoto.self], inMemory: true)
 }

@@ -161,5 +161,5 @@ private struct StatTile: View {
 
 #Preview {
     StatsView()
-        .modelContainer(for: [FoodItem.self, ShoppingItem.self, DoorNote.self], inMemory: true)
+        .modelContainer(for: [FoodItem.self, ShoppingItem.self, DoorNote.self, DoorPhoto.self], inMemory: true)
 }

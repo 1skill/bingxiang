@@ -321,7 +321,7 @@ private struct ShelfView: View {
                 // 食材：站在层板前沿上，大小略有差别，挨得近一点。
                 HStack(alignment: .bottom, spacing: 4) {
                     ForEach(layout.visible) { item in
-                        ProductView(item: item, size: tile * Self.scale(for: item))
+                        ProductView(item: item, size: layout.tile * Self.scale(for: item))
                     }
                     if layout.overflow > 0 {
                         Text("+\(layout.overflow)")
@@ -365,22 +365,36 @@ private struct ShelfView: View {
     }
 }
 
-/// 架子上放得下几样：数量多的食材占得宽，放不下的折成 "+N"。
+/// 架子上放得下几样：放不下就先把东西整体缩小一点（最多缩到 72%），还放不下才折成 "+N"。
 private struct ShelfLayout {
     let visible: [FoodItem]
     let overflow: Int
+    /// 实际使用的尺寸，可能比传进来的小。
+    let tile: CGFloat
 
     init(items: [FoodItem], tile: CGFloat, available: CGFloat) {
+        for factor in [1.0, 0.92, 0.84, 0.76, 0.72] {
+            let scaled = tile * factor
+            let total = items.reduce(CGFloat(0)) { $0 + ProductView.width(for: $1, size: scaled * 0.93) + 4 }
+            if total <= available {
+                self.visible = items
+                self.overflow = 0
+                self.tile = scaled
+                return
+            }
+        }
+        let scaled = tile * 0.72
         var used: CGFloat = 0
         var visible: [FoodItem] = []
         for item in items {
-            let width = ProductView.width(for: item, size: tile * 0.93) + 4
-            if used + width > available && !visible.isEmpty { break }
+            let width = ProductView.width(for: item, size: scaled * 0.93) + 4
+            if used + width > available - 36 && !visible.isEmpty { break }
             used += width
             visible.append(item)
         }
         self.visible = visible
         self.overflow = items.count - visible.count
+        self.tile = scaled
     }
 }
 

@@ -297,9 +297,7 @@ struct ProductView: View {
                 .blur(radius: 3)
                 .offset(x: Self.width(for: item, size: size) * 0.05, y: size * 0.06)
             ForEach(0..<copies, id: \.self) { index in
-                Text(item.emoji)
-                    .font(.system(size: size * 0.84))
-                    .frame(width: size, height: size)
+                FoodArtView(item: item, size: size)
                     .offset(x: CGFloat(index) * size * 0.42, y: CGFloat(index) * -1.5)
             }
         }
@@ -328,5 +326,25 @@ private struct FoldGap: View {
             startPoint: isVertical ? .leading : .top,
             endPoint: isVertical ? .trailing : .bottom
         )
+    }
+}
+
+/// 一样食材的图：资源目录里有生成好的图就用图，没有就用 emoji。
+struct FoodArtView: View {
+    let item: FoodItem
+    let size: CGFloat
+
+    var body: some View {
+        if let name = FoodCatalog.artName(for: item.name), let uiImage = UIImage(named: name) {
+            Image(uiImage: uiImage)
+                .resizable()
+                .scaledToFit()
+                .frame(width: size * 1.08, height: size * 1.08)
+                .shadow(color: .black.opacity(0.25), radius: 2, y: 2)
+        } else {
+            Text(item.emoji)
+                .font(.system(size: size * 0.84))
+                .frame(width: size, height: size)
+        }
     }
 }

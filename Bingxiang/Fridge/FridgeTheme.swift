@@ -20,6 +20,10 @@ struct FridgeTheme: Identifiable, Hashable {
     let menuTint: Color
     /// 门板是深色的话，字和图标用浅色。
     let isDark: Bool
+    /// 内部渲染图是樱花红的，其他颜色靠调色相 / 饱和度 / 亮度派生。
+    var renderHue: Angle = .zero
+    var renderSaturation: Double = 1
+    var renderBrightness: Double = 0
 
     var doorText: Color { isDark ? .white.opacity(0.85) : .black.opacity(0.7) }
 
@@ -44,7 +48,10 @@ struct FridgeTheme: Identifiable, Hashable {
         shelf: Color(red: 0.26, green: 0.32, blue: 0.42),
         shelfEdge: Color(red: 0.62, green: 0.68, blue: 0.80),
         menuTint: Color(red: 0.45, green: 0.52, blue: 0.66),
-        isDark: true
+        isDark: true,
+        renderHue: .degrees(-150),
+        renderSaturation: 0.45,
+        renderBrightness: -0.22
     )
 
     static let starWhite = FridgeTheme(
@@ -56,7 +63,9 @@ struct FridgeTheme: Identifiable, Hashable {
         shelf: Color(red: 0.78, green: 0.80, blue: 0.84),
         shelfEdge: .white,
         menuTint: Color(red: 0.72, green: 0.75, blue: 0.80),
-        isDark: false
+        isDark: false,
+        renderSaturation: 0.08,
+        renderBrightness: 0.05
     )
 
     static let burgundy = FridgeTheme(
@@ -68,7 +77,10 @@ struct FridgeTheme: Identifiable, Hashable {
         shelf: Color(red: 0.40, green: 0.09, blue: 0.14),
         shelfEdge: Color(red: 0.78, green: 0.38, blue: 0.44),
         menuTint: Color(red: 0.72, green: 0.32, blue: 0.38),
-        isDark: true
+        isDark: true,
+        renderHue: .degrees(-8),
+        renderSaturation: 1.35,
+        renderBrightness: -0.28
     )
 
     static let glacier = FridgeTheme(
@@ -80,7 +92,10 @@ struct FridgeTheme: Identifiable, Hashable {
         shelf: Color(red: 0.60, green: 0.75, blue: 0.88),
         shelfEdge: .white,
         menuTint: Color(red: 0.52, green: 0.70, blue: 0.86),
-        isDark: false
+        isDark: false,
+        renderHue: .degrees(190),
+        renderSaturation: 0.55,
+        renderBrightness: 0.06
     )
 
     static let all: [FridgeTheme] = [.cherryBlossom, .nightSky, .starWhite, .burgundy, .glacier]
